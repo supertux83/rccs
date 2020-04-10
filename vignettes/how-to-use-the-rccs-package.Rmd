@@ -1,0 +1,143 @@
+---
+title: "how-to-use-the-rccs-package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{how-to-use-the-rccs-package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rccs)
+```
+
+## 1. Load the data
+
+Data on confirmed cases, deaths and recoveries can be retrieved using the load_csse_data function.
+The data type is chosen using the variable case_type ("confirmed" by default).
+Using the variable sum_by_iso3c, it is possible to retrieve "raw" data, not aggregated by country.
+
+Note: a warning is issued if data cannot be aligned with an iso3c code. For all these data, the replacement indicator "XXX" is used.
+
+
+```{r}
+current_confirmed <- suppressWarnings({
+  load_csse_data()
+})
+current_deaths <- suppressWarnings({
+  load_csse_data(case_type = "deaths")
+})
+raw_current_recovered <- suppressWarnings({
+  load_csse_data(case_type = "recovered", sum_by_iso3c = FALSE)
+})
+oms_transmission_data <- load_oms_data()
+```
+
+## 2. Data retrieval
+
+The get_data function is used to retrieve data in a standardized format.
+
+To select a short list of countries or territories, the iso3c codes must be provided in parameter (variable iso3c_country_code)
+
+The date range can be selected using the variables start_date and en_date.
+
+Data can be either cumulative or additive, i.e. the number of new cases from one date to the next (daily if data are available for all days in the selected range). The choice is made using the variable data_type.
+
+The data can be expressed in terms of frequency or incidence (variable by_p100000_incidence).
+Caution: if the data is not grouped by iso3c code, the incidences may be erroneous.
+
+If necessary, additional data can be added (population, HDI, etc.) using the variable add_suppl_info.
+
+```{r}
+x <- current_confirmed$get_data()
+x <- current_confirmed$get_data(iso3c_country_code = c("FRA", "DEU"))
+x <- current_confirmed$get_data(start_date = as.Date("2020-03-01"), end_date = as.Date("2020-03-31"))
+x <- current_confirmed$get_data(by_p100000_incidence = TRUE)
+x <- current_confirmed$get_data(add_suppl_info = TRUE)
+```
+
+## 3. Rolling mean or rolling sum
+
+The rolling_data function allows you to calculate a sum or a rolling average on the data, with a configurable window width (n_days, by default equal to 7).
+The results can be expressed in frequency or incidence.
+
+```{r}
+x <- current_confirmed$rolling_data()
+x <- current_confirmed$rolling_data(iso3c_country_code = c("FRA", "DEU"))
+x <- current_confirmed$rolling_data(n_days = 14)
+x <- current_confirmed$rolling_data(rolling_function = "sum")
+x <- current_confirmed$rolling_data(by_p100000_incidence = TRUE)
+```
+
+## 4. Doubling time
+
+The doubling time function calculates a doubling time from a relative growth measured over a sliding window of n_days days (default 7).
+
+Data that do not have at least min_case cases (default 100) are not taken into account.
+
+```{r}
+x <- current_confirmed$doubling_time()
+x <- current_confirmed$doubling_time(iso3c_country_code = c("FRA", "DEU"))
+x <- current_confirmed$doubling_time(n_days = 3)
+x <- current_confirmed$doubling_time(min_cases = 50)
+
+fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA", "DEU"))
+fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA", "DEU"), window_size = 5)
+fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA", "DEU"), plot_title = "Evolution du temps de doublemment")
+fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA", "DEU"), min_cases = 10)
+fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA", "DEU"), start_date = as.Date("2020-03-01"))
+fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA", "DEU"), end_date = as.Date("2020-04-01"))
+```
+
+## Main indicators
+
+```{r}
+x <- current_confirmed$main_indicators(iso3c_country_code = c("FRA", "DEU"), as_of = as.Date("2020-04-01"))
+```
+
+
+## Dynamic world map
+
+Beta version of a world map of the cumulative incidence of COVID-19 cases.
+
+By default, cumulative incidence for the last 7 days.
+
+```{r}
+fig <- rccs_leaflet_inc_map(current_confirmed)
+fig <- rccs_leaflet_inc_map(current_confirmed, n_days = 14)
+fig <- rccs_leaflet_inc_map(current_confirmed, as_of = as.Date("2020-04-01"))
+fig <- rccs_leaflet_inc_map(current_confirmed, custom_brks = c(0, 1, 10, 100, 1000))
+```
+
+## Time series
+
+Stacked dynamic time series graph
+
+```{r}
+fig <- rccs_dygraph_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"))
+fig <- rccs_dygraph_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), by_p100000_incidence = TRUE)
+fig <- rccs_dygraph_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), plot_title = "COVID-19 confirmed cases")
+fig <- rccs_dygraph_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), roll_period = 3)
+fig <- rccs_dygraph_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), y_logscale = TRUE, data_type = "cumulative")
+```
+
+Stacked static time series graph
+
+```{r}
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"))
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), by_p100000_incidence = TRUE)
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), plot_title = "COVID-19 confirmed cases")
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), y_logscale = TRUE, data_type = "cumulative")
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), smoothing = FALSE)
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), start_date = as.Date("2020-03-01"))
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), end_date = as.Date("2020-04-01"))
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), separate_graphs = TRUE)
+```
+
