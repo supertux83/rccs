@@ -139,5 +139,6 @@ fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DE
 fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), start_date = as.Date("2020-03-01"))
 fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), end_date = as.Date("2020-04-01"))
 fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), separate_graphs = TRUE)
+fig <- rccs_ggplot_inc_plot(current_confirmed, iso3c_country_code = c("FRA", "DEU"), smoothing = TRUE, smoothing_by_ma = TRUE, ma_n_days = 3)
 ```
 

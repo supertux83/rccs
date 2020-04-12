@@ -13,6 +13,8 @@ rccs_ggplot_inc_plot(
   y_logscale = FALSE,
   data_type = "daily",
   smoothing = TRUE,
+  smoothing_by_ma = FALSE,
+  ma_n_days = 3,
   start_date = NA,
   end_date = NA,
   separate_graphs = FALSE
@@ -32,6 +34,10 @@ rccs_ggplot_inc_plot(
 \item{data_type}{data type : "cumulative" or "daily"}
 
 \item{smoothing}{a logical value}
+
+\item{smoothing_by_ma}{a logical value}
+
+\item{ma_n_days}{an integer value (size of the rolling window for averaging)}
 
 \item{start_date}{either NA or the start date of data}
 

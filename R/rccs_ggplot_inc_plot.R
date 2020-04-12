@@ -18,6 +18,7 @@
 #' @importFrom ggplot2 aes_string
 #' @importFrom ggplot2 labs
 #' @importFrom ggplot2 facet_wrap
+#' @importFrom tidyquant geom_ma
 #'
 #' @param csse_data_object a CsseData object created by load_csse
 #' @param iso3c_country_code a character vector of iso3c country codes
@@ -26,13 +27,15 @@
 #' @param y_logscale a logical value
 #' @param data_type data type : "cumulative" or "daily"
 #' @param smoothing a logical value
+#' @param smoothing_by_ma a logical value
+#' @param ma_n_days an integer value (size of the rolling window for averaging)
 #' @param start_date either NA or the start date of data
 #' @param end_date either NA of the end date of data
 #' @param separate_graphs a logicial value
 #'
 #' @return a ggplot2 object
 #' @export
-rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p100000_incidence = FALSE, plot_title = NA, y_logscale = FALSE, data_type = "daily", smoothing = TRUE, start_date = NA, end_date = NA, separate_graphs = FALSE) {
+rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p100000_incidence = FALSE, plot_title = NA, y_logscale = FALSE, data_type = "daily", smoothing = TRUE, smoothing_by_ma = FALSE, ma_n_days = 3, start_date = NA, end_date = NA, separate_graphs = FALSE) {
 
   # csse_data_object: must be a CsseData object
   stopifnot(
@@ -73,6 +76,17 @@ rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p10000
     length(smoothing) == 1,
     is.logical(smoothing)
   )
+  # smoothing_by_ma: a single logical value
+  stopifnot(
+    length(smoothing_by_ma) == 1,
+    is.logical(smoothing_by_ma)
+  )
+  stopifnot(
+    length(ma_n_days) == 1,
+    is.numeric(ma_n_days),
+    ma_n_days >= 1
+  )
+  ma_n_days <- trunc(ma_n_days)
   # start_date and end_date: either NA or a date
   if( !all(is.na(start_date)) ) {
     stopifnot(
@@ -132,10 +146,15 @@ rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p10000
   fig <- ggplot(ts_df, aes_string(x = "date", y = "n", colour = "country", fill = "country"))
 
   # add smoothing if requested
-  if( smoothing == TRUE ) {
+  if( smoothing == TRUE & smoothing_by_ma == TRUE ) {
+    fig <- fig + geom_line(size = 0.8, alpha = 0.3) +
+      tidyquant::geom_ma(n = ma_n_days, linetype = "twodash", size = 0.8)
+  }
+  if( smoothing == TRUE & smoothing_by_ma == FALSE ) {
     fig <- fig + geom_line(size = 0.8, alpha = 0.3) +
       geom_smooth(se = FALSE, linetype = "twodash", size = 0.8, method = "gam", formula = y ~ s(x, bs = "cs"))
-  } else {
+  }
+  if( smoothing == FALSE ) {
     fig <- fig + geom_line(size = 0.8)
   }
 
