@@ -37,7 +37,7 @@ current_deaths <- suppressWarnings({
 raw_current_recovered <- suppressWarnings({
   load_csse_data(case_type = "recovered", sum_by_iso3c = FALSE)
 })
-oms_transmission_data <- load_oms_data()
+# oms_transmission_data <- load_oms_data() ##NOT WORKING
 ```
 
 ## 2. Data retrieval
@@ -99,7 +99,7 @@ fig <- rccs_ggplot_doubling_time(current_confirmed, iso3c_country_code = c("FRA"
 ## Main indicators
 
 ```{r}
-x <- current_confirmed$main_indicators(iso3c_country_code = c("FRA", "DEU"), as_of = as.Date("2020-04-01"))
+# x <- current_confirmed$main_indicators(iso3c_country_code = c("FRA", "DEU"), as_of = as.Date("2020-04-01"))
 ```
 
 
