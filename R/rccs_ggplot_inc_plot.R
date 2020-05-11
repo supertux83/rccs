@@ -19,6 +19,7 @@
 #' @importFrom ggplot2 labs
 #' @importFrom ggplot2 facet_wrap
 #' @importFrom tidyquant geom_ma
+#' @importFrom ggrepel geom_label_repel
 #'
 #' @param csse_data_object a CsseData object created by load_csse
 #' @param iso3c_country_code a character vector of iso3c country codes
@@ -135,6 +136,19 @@ rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p10000
   # prepare the dataset for ggplot
   ts_df %<>% gather("country", "n", -date)
 
+  # if values under zero (regularizations) ==> set to zero and add a mark
+  if(any(ts_df$n < 0)) {
+    marks_x <- which(ts_df$n < 0)
+    marks_df <- data.frame(
+      x = ts_df$date[marks_x],
+      y = 0,
+      label = "R\u00e9gularisation",
+      country = ts_df$country[marks_x],
+      stringsAsFactors = FALSE
+    )
+    ts_df$n[marks_x] <- 0
+  }
+
   # y label
   if( by_p100000_incidence == TRUE ) {
     plot_ylab = "Incidence p.100 000 personnes"
@@ -161,6 +175,22 @@ rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p10000
   # add log scale if requested
   if ( y_logscale == TRUE ) {
     fig <- fig + scale_y_continuous(trans='log2')
+  }
+
+  # add regularization marks
+  if (nrow(marks_df) > 0) {
+    fig <-
+      fig + geom_label_repel(
+        aes_string(
+          x = "x",
+          y = "y",
+          label = "label",
+          fill = "country"
+        ),
+        data = marks_df,
+        color = "white",
+        show.legend = FALSE
+      )
   }
 
   # add labels and themes

@@ -1,6 +1,6 @@
 Package: rccs
 Title: Rapid CSSE COVID-19 data extractor for the SVA
-Version: 0.20200412.0946
+Version: 0.20200511.1144
 Authors@R: 
     person(given = "François",
            family = "Delon",
@@ -43,4 +43,5 @@ Imports:
     jsonlite (>= 1.6.0),
     tabulizer (>= 0.2.0),
     stringr (>= 1.4.0),
-    tidyquant (>= 1.0.0)
+    tidyquant (>= 1.0.0),
+    ggrepel (>= 0.8.0)

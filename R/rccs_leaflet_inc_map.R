@@ -71,6 +71,10 @@ rccs_leaflet_inc_map <- function(csse_data_object, n_days = 7, as_of = NA, custo
   df %<>%
     mutate(country_fr = sapply(.data$iso3c, extended_countrycode, origin = "iso3c", destination = "country.name.fr"))
 
+  # set the minimum incidence to zero (correct regularizations)
+  marks_x <- which(df$incidence < 0)
+  df$incidence[marks_x] <- 0
+
   # find the cut intervals
   if( all(is.na(custom_brks)) ) {
     cuts <- classIntervals(df$incidence, n = 6, style = "quantile", dataPrecision = 1)
