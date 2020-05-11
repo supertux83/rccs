@@ -178,7 +178,7 @@ rccs_ggplot_inc_plot <- function(csse_data_object, iso3c_country_code, by_p10000
   }
 
   # add regularization marks
-  if (nrow(marks_df) > 0) {
+  if (exists("marks_df")) {
     fig <-
       fig + geom_label_repel(
         aes_string(

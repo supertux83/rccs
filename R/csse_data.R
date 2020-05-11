@@ -465,9 +465,9 @@ csse_data <- R6Class(
         mutate(taux_incidence_cas_14_derniers_jours = ifelse(is.na(.data$taux_incidence_cas_14_derniers_jours), NA, sprintf("%.0f p.100 000 personnes", .data$taux_incidence_cas_14_derniers_jours)))
 
       # add WHO data
-      oms_transmission_data <- load_oms_data()
-      result %<>%
-        left_join(oms_transmission_data, by = "iso3c")
+      # oms_transmission_data <- load_oms_data()
+      # result %<>%
+      #   left_join(oms_transmission_data, by = "iso3c")
 
       result %<>%
         arrange(.data$pays)
